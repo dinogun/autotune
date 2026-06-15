@@ -1058,6 +1058,7 @@ public class AnalyzerConstants {
             public static final String CURRENT_UPDATE_RESULTS_VERSION = "v2.0";
             public static final String CURRENT_LIST_RECOMMENDATIONS_VERSION = "v3.0";
             public static final String CURRENT_UPDATE_RECOMMENDATIONS_VERSION = "v3.0";
+            public static final String CURRENT_RECOMMENDATIONS_API_VERSION = "v1.0";
 
             private APIVersionConstants() {
 

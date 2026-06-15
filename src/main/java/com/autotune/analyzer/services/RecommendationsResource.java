@@ -72,6 +72,7 @@ import static com.autotune.analyzer.utils.AnalyzerConstants.LOCAL;
 import static com.autotune.analyzer.utils.AnalyzerConstants.REMOTE;
 import static com.autotune.analyzer.utils.AnalyzerConstants.ServiceConstants.CHARACTER_ENCODING;
 import static com.autotune.analyzer.utils.AnalyzerConstants.ServiceConstants.JSON_CONTENT_TYPE;
+import static com.autotune.analyzer.utils.AnalyzerConstants.VersionConstants.APIVersionConstants.CURRENT_RECOMMENDATIONS_API_VERSION;
 import static com.autotune.utils.KruizeConstants.KRUIZE_BULK_API.JOB_ID;
 
 /**
@@ -313,10 +314,10 @@ public class RecommendationsResource extends HttpServlet {
             sendErrorResponse(response, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
             LOGGER.debug("RecommendationsResource POST completed - count: {}", calCount);
-            MetricsConfig.timerRecomendationResource = MetricsConfig.timerBRecomendationResource
+            MetricsConfig.timerRecommendationResource = MetricsConfig.timerBRecomendationResource
                     .tag(KruizeConstants.DataSourceConstants.DataSourceQueryJSONKeys.STATUS, statusValue)
                     .register(MetricsConfig.meterRegistry());
-            timerBRecommendationResource.stop(MetricsConfig.timerRecomendationResource);
+            timerBRecommendationResource.stop(MetricsConfig.timerRecommendationResource);
         }
     }
 
@@ -353,7 +354,7 @@ public class RecommendationsResource extends HttpServlet {
                         processRecommendations(recommendations.getData().values());
                     }
                 }
-                listRecommendationsAPIObject.setApiVersion(KruizeConstants.KRUIZE_RECOMMENDATION_API_VERSION.LATEST.getVersionNumber());
+                listRecommendationsAPIObject.setApiVersion(CURRENT_RECOMMENDATIONS_API_VERSION);
                 recommendationList.add(listRecommendationsAPIObject);
             } catch (Exception e) {
                 LOGGER.error("Not able to generate recommendation for expName : {} due to {}", ko.getExperimentName(), e.getMessage());
