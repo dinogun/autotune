@@ -249,7 +249,6 @@ public class RecommendationsResource extends HttpServlet {
 
     /**
      * Generates recommendations using the V1 schema
-     * Supports both remote and local monitoring modes via the "target" query parameter.
      *
      * @param request  an {@link HttpServletRequest} object that contains the request the client has made
      * @param response an {@link HttpServletResponse} object that contains the response the servlet sends to the client
