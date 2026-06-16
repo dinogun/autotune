@@ -136,15 +136,6 @@ function time_diff() {
 	echo $diffsec
 }
 
-# Redirect all subsequent stdout/stderr from the current shell to both console and log.
-# Intended for top-level test driver scripts after log paths are initialized.
-function setup_script_logging() {
-	log_file=$1
-
-	touch "${log_file}"
-	exec > >(tee -a "${log_file}") 2>&1
-}
-
 function install_python_requirements() {
 	requirements_file=$1
 	pip_install_log=$2

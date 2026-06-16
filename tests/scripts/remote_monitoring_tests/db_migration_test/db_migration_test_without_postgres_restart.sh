@@ -110,52 +110,54 @@ LOG="${LOG_DIR}/db-migration-test-without-kruize-db-restart.log"
 
 PIP_INSTALL_LOG="${LOG_DIR}/pip_install.log"
 
-setup_script_logging "${LOG}"
 install_python_requirements "${REMOTE_MONITORING_TEST_DIR}/requirements.txt" "${PIP_INSTALL_LOG}"
+
+# Enable user workload monitoring
+${KRUIZE_REPO_PATH}/scripts/enable_user_workload_monitoring_openshift.sh
 
 # Run scalability test to load 50 exps / 15 days data and update Recommendations with previous release
 pushd ${SCALE_TEST} > /dev/null
-	echo ""
-	echo "Run scalability test to load 50 exps / 15 days data and update Recommendations with ${kruize_image_prev}"
-	echo "./remote_monitoring_scale_test_bulk.sh -i ${kruize_image_prev} -u ${num_exps} -d ${num_days_of_res} -n ${num_clients} -t ${interval_hours} -q ${query_db_interval} -s ${initial_start_date} -r ${LOG_DIR}/test_logs_50_15days -a migration"
+	echo "" | tee -a ${LOG}
+	echo "Run scalability test to load 50 exps / 15 days data and update Recommendations with ${kruize_image_prev}" | tee -a ${LOG}
+	echo "./remote_monitoring_scale_test_bulk.sh -i ${kruize_image_prev} -u ${num_exps} -d ${num_days_of_res} -n ${num_clients} -t ${interval_hours} -q ${query_db_interval} -s ${initial_start_date} -r ${LOG_DIR}/test_logs_50_15days -a migration" | tee -a ${LOG}
 	./remote_monitoring_scale_test_bulk.sh -i ${kruize_image_prev} -u ${num_exps} -d ${num_days_of_res} -n ${num_clients} -t ${interval_hours} -q ${query_db_interval} -s ${initial_start_date} -r ${LOG_DIR}/test_logs_50_15days -a "migration"
-popd > /dev/null 
-	echo ""
+popd > /dev/null
+	echo "" | tee -a ${LOG}
 
 sleep 20
 
 # Restart only kruize with the current release image
-echo ""
-echo "Restarting only kruize instances with ${kruize_image_current} image..."
-echo "kubectl set image deployment/kruize kruize=${kruize_image_current} -n ${NAMESPACE}"
+echo "" | tee -a ${LOG}
+echo "Restarting only kruize instances with ${kruize_image_current} image..." | tee -a ${LOG}
+echo "kubectl set image deployment/kruize kruize=${kruize_image_current} -n ${NAMESPACE}" | tee -a ${LOG}
 kubectl set image deployment/kruize kruize=${kruize_image_current} -n ${NAMESPACE}
 status=$?
 if [ ${status} != 0 ]; then
-	echo "Restarting only kruize instances with ${kruize_image_current} image failed!"
+	echo "Restarting only kruize instances with ${kruize_image_current} image failed!" | tee -a ${LOG}
 	exit 1
 else
-	echo "Restarting only kruize instances with ${kruize_image_current} image...done"
+	echo "Restarting only kruize instances with ${kruize_image_current} image...done" | tee -a ${LOG}
 fi
 
-echo ""
+echo "" | tee -a ${LOG}
 sleep 60
 total_results_count=$((${num_exps} * ${num_clients} * ${num_days_of_res} * 96))
 
 # Run scalability test to load 50 exps / 1 day data and update Recommendations after restoring DB with the current release
 pushd ${SCALE_TEST} > /dev/null
-	echo ""
-	echo "Run scalability test to load 50 exps / 1 day data and update Recommendations with ${kruize_image_current}..."
+	echo "" | tee -a ${LOG}
+	echo "Run scalability test to load 50 exps / 1 day data and update Recommendations with ${kruize_image_current}..." | tee -a ${LOG}
 
 	initial_start_date=$(increment_timestamp_by_days $initial_start_date $num_days_of_res)
 	kruize_setup=false
 
 	num_days_of_res=1
 
-	echo "./remote_monitoring_scale_test_bulk.sh -i ${kruize_image_current} -u ${num_exps} -d ${num_days_of_res} -n ${num_clients} -t ${interval_hours} -q ${query_db_interval} -s ${initial_start_date} -b ${kruize_setup} -r ${LOG_DIR}/test_logs_50_16days -e ${total_results_count} -a migration"
+	echo "./remote_monitoring_scale_test_bulk.sh -i ${kruize_image_current} -u ${num_exps} -d ${num_days_of_res} -n ${num_clients} -t ${interval_hours} -q ${query_db_interval} -s ${initial_start_date} -b ${kruize_setup} -r ${LOG_DIR}/test_logs_50_16days -e ${total_results_count} -a migration" | tee -a ${LOG}
 	./remote_monitoring_scale_test_bulk.sh -i ${kruize_image_current} -u ${num_exps} -d ${num_days_of_res} -n ${num_clients} -t ${interval_hours} -q ${query_db_interval} -s ${initial_start_date} -b ${kruize_setup} -r ${LOG_DIR}/test_logs_50_16days -e ${total_results_count} -a "migration"
 
-	echo ""
-	echo ""
+	echo "" | tee -a ${LOG}
+	echo "" | tee -a ${LOG}
 popd > /dev/null 
 
 
@@ -163,7 +165,7 @@ popd > /dev/null
 failed=0
 end_time=$(increment_timestamp_by_days $initial_start_date $num_days_of_res)
 pushd ${CURRENT_DIR} > /dev/null
-echo "Validating the recommendations..."
+echo "Validating the recommendations..." | tee -a ${LOG}
 
 for ((loop=1; loop<=num_clients; loop++));
 do
@@ -176,7 +178,7 @@ do
 
 	        reco_json_dir="${LOG_DIR}/reco_jsons"
         	mkdir -p ${reco_json_dir}
-        	echo "curl -s http://${SERVER_IP_ADDR}/listRecommendations?experiment_name=${exp_name}&rm=true"
+        	echo "curl -s http://${SERVER_IP_ADDR}/listRecommendations?experiment_name=${exp_name}&rm=true" | tee -a ${LOG}
 	        curl -s "http://${SERVER_IP_ADDR}/listRecommendations?experiment_name=${exp_name}&rm=true" > ${reco_json_dir}/${exp_name}_reco.json
 
 		python3 validate_reco_json.py -f ${reco_json_dir}/${exp_name}_reco.json -e ${end_time}
@@ -187,19 +189,19 @@ do
 done
 popd > /dev/null
 
-echo "Validating the recommendations...Done"
+echo "Validating the recommendations...Done" | tee -a ${LOG}
 
 
 end_time=$(get_date)
 elapsed_time=$(time_diff "${start_time}" "${end_time}")
-echo ""
-echo "Test took ${elapsed_time} seconds to complete"
+echo "" | tee -a ${LOG}
+echo "Test took ${elapsed_time} seconds to complete" | tee -a ${LOG}
 
 if [ ${failed} == 0 ]; then
-	echo "DB Migration test without kruize DB restart - Passed!"
+	echo "DB Migration test without kruize DB restart - Passed!" | tee -a ${LOG}
 	exit 0
 else
-	echo "DB Migration test without kruize DB restart - Failed! Check logs for details"
+	echo "DB Migration test without kruize DB restart - Failed! Check logs for details" | tee -a ${LOG}
 	exit 1
 fi
 
