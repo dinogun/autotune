@@ -313,7 +313,7 @@ public class RecommendationsResource extends HttpServlet {
             sendErrorResponse(response, e, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
             LOGGER.debug("RecommendationsResource POST completed - count: {}", calCount);
-            MetricsConfig.timerRecommendationResource = MetricsConfig.timerBRecomendationResource
+            MetricsConfig.timerRecommendationResource = MetricsConfig.timerBRecommendationResource
                     .tag(KruizeConstants.DataSourceConstants.DataSourceQueryJSONKeys.STATUS, statusValue)
                     .register(MetricsConfig.meterRegistry());
             timerBRecommendationResource.stop(MetricsConfig.timerRecommendationResource);
