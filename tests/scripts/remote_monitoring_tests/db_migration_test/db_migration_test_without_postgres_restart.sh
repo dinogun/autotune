@@ -110,7 +110,7 @@ LOG="${LOG_DIR}/db-migration-test-without-kruize-db-restart.log"
 
 PIP_INSTALL_LOG="${LOG_DIR}/pip_install.log"
 
-install_python_requirements "${REMOTE_MONITORING_TEST_DIR}/requirements.txt" "${PIP_INSTALL_LOG}"
+install_python_requirements "${REMOTE_MONITORING_TEST_DIR}/requirements.txt" "${PIP_INSTALL_LOG}" | tee -a ${LOG}
 
 # Enable user workload monitoring
 ${KRUIZE_REPO_PATH}/scripts/enable_user_workload_monitoring_openshift.sh
