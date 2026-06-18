@@ -1266,9 +1266,9 @@ def test_update_recommendations_with_perf_profile_single_pod(cluster_type):
     print(f"Response: {data}")
     assert response.status_code == SUCCESS_200_STATUS_CODE
     # Check for the update success message with version 2.0
-    assert "updated successfully to version 2.0" in data.get('message', '') or \
-           UPDATE_PERF_PROFILE_SUCCESS_MSG % ("resource-optimization-openshift", 2.0) in data.get('message', '')
-    print("Performance profile updated to v2 successfully")
+    assert "updated successfully to version 3.0" in data.get('message', '') or \
+           UPDATE_PERF_PROFILE_SUCCESS_MSG % ("resource-optimization-openshift", 3.0) in data.get('message', '')
+    print("Performance profile updated to v3 successfully")
 
     # Step 5: Create 3 new experiments (container, namespace, GPU)
     print("\n[Step 5] Creating experiments for container, namespace, and GPU...")
@@ -1508,9 +1508,9 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
     print(f"Response: {data}")
     assert response.status_code == SUCCESS_200_STATUS_CODE
     # Check for the update success message with version 2.0
-    assert "updated successfully to version 2.0" in data.get('message', '') or \
-           UPDATE_PERF_PROFILE_SUCCESS_MSG % ("resource-optimization-openshift", 2.0) in data.get('message', '')
-    print("Performance profile updated to v2 successfully")
+    assert "updated successfully to version 3.0" in data.get('message', '') or \
+           UPDATE_PERF_PROFILE_SUCCESS_MSG % ("resource-optimization-openshift", 3.0) in data.get('message', '')
+    print("Performance profile updated to v3 successfully")
 
     # Step 5: Create 3 new experiments (container, namespace, GPU)
     print("\n[Step 5] Creating experiments for container, namespace, and GPU...")
