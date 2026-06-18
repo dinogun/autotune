@@ -22,7 +22,7 @@ from pathlib import Path
 from helpers.kruize import *
 from helpers.kruize import delete_layer_from_db
 from helpers.list_metadata_json_validate import *
-from helpers.list_reco_json_local_monitoring_schema import list_reco_json_local_monitoring_schema
+from helpers.reco_json_schemas import list_reco_json_local_monitoring_schema
 from helpers.list_reco_json_validate import validate_list_reco_json
 from helpers.utils import (
     SUCCESS_STATUS_CODE,

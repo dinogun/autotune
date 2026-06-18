@@ -6,9 +6,7 @@ sys.path.append("../..")
 from helpers.fixtures import *
 from helpers.generate_rm_jsons import *
 from helpers.kruize import *
-from helpers.list_reco_json_schema import *
-from helpers.medium_term_list_reco_json_schema import *
-from helpers.long_term_list_reco_json_schema import *
+from helpers.reco_json_schemas import *
 from helpers.list_reco_json_validate import *
 from helpers.utils import *
 
