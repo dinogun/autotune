@@ -1425,8 +1425,9 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
         }
     ]
 
+    perf_profile_v1_json_file = "../json_files/resource_optimization_openshift_v1.json"
     perf_profile_dir = get_metric_profile_dir()
-    perf_profile_v2_json_file = perf_profile_dir / 'resource_optimization_openshift.json'
+    perf_profile_v3_json_file = perf_profile_dir / 'resource_optimization_openshift.json'
 
     form_kruize_url(cluster_type)
 
@@ -1438,6 +1439,18 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
             print(f"Delete {exp['name']} experiment response: {response.status_code}")
         except Exception as e:
             print(f"Experiment doesn't exist: {e}")
+
+    # Delete any existing profile
+    response = delete_performance_profile(perf_profile_v3_json_file)
+    print("delete API status code = ", response.status_code)
+    data = response.json()
+    print("delete API status message  = ", data["message"])
+    sleep(5)
+
+    # Step 1: Create the v1 performance profile
+    response = create_performance_profile(perf_profile_v1_json_file)
+    data = response.json()
+    print(data['message'])
 
     # Step 2: Create container experiment
     print(f"\n[Step 2] Creating container experiment...")
@@ -1513,9 +1526,13 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
 
     print(f"{experiments[0]['name']} experiment recommendations validated successfully")
 
-    # Step 4: Update the performance profile to v2
-    print("\n [Step 4] Updating performance profile to v2...")
-    response = update_performance_profile(perf_profile_v2_json_file)
+    # Cleanup: Delete container experiments
+    response = delete_experiment(input_json_file)
+    print(f"Delete {experiment_name} experiment: {response.status_code}")
+        
+    # Step 4: Update the performance profile to v3
+    print("\n [Step 4] Updating performance profile to v3...")
+    response = update_performance_profile(perf_profile_v3_json_file)
     print(f"Update performance profile v2 response: {response.status_code}")
     data = response.json()
     print(f"Response: {data}")
