@@ -725,6 +725,7 @@ def test_update_namespace_recommendations_for_diff_reco_terms_with_only_latest(t
         update_results_json_file = "/tmp/update_results_" + str(i) + ".json"
 
         result_json_arr = []
+        result_batch = []
         # Get the experiment name
         json_data = json.load(open(create_exp_json_file))
         experiment_name = json_data[0]['experiment_name']
@@ -742,17 +743,26 @@ def test_update_namespace_recommendations_for_diff_reco_terms_with_only_latest(t
             end_time = increment_timestamp_by_given_mins(start_time, 15)
             result_json[0]['interval_end_time'] = end_time
 
-            write_json_data_to_file(update_results_json_file, result_json)
             result_json_arr.append(result_json[0])
-            response = update_results(update_results_json_file, False)
+            result_batch.append(result_json[0])
+            if (len(result_batch) == 100): # Call updateResults API for every 100 datapoints
+                write_json_data_to_file(update_results_json_file, result_batch)
+                response = update_results(update_results_json_file, logging)
+                data = response.json()
+                print("message = ", data['message'])
+                assert response.status_code == SUCCESS_STATUS_CODE
+                assert data['status'] == SUCCESS_STATUS
+                assert data['message'] == UPDATE_RESULTS_SUCCESS_MSG
+                result_batch = []
 
+        if (len(result_batch) > 0): # Handle last batch of metrics datapoints
+            write_json_data_to_file(update_results_json_file, result_batch)
+            response = update_results(update_results_json_file, logging)
             data = response.json()
             print("message = ", data['message'])
             assert response.status_code == SUCCESS_STATUS_CODE
             assert data['status'] == SUCCESS_STATUS
             assert data['message'] == UPDATE_RESULTS_SUCCESS_MSG
-
-            update_recommendations(experiment_name, None, end_time)
 
         list_of_result_json_arr.append(result_json_arr)
 
