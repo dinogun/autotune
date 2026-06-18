@@ -963,9 +963,22 @@ def test_list_recommendations_for_diff_reco_terms_with_only_latest(test_name, nu
                                                                    expected_duration_in_hours, latest, logging,
                                                                    cluster_type):
     """
-        Test Description: This test validates list recommendations for all the terms for multiple experiments posted using different json files
-                          and query with only the parameter latest and with both latest=true and latest=false
+    Test Description: This test validates list recommendations for all the terms for single experiment with parameter
+    - latest=true and latest=false
+
+    Test Flow:
+    For a given term as defined by parameter 'test_name' and 'num_days',
+    1. experiment is created using /createExperiment endpoint
+    2. metrics data is pushed using /updateResults endpoint in batches of 100 datapoints
+    3. recommendation is generated using /updateRecommendation endpoint.
+    4. fetch recommendation using /listRecommendations endpoint.
+
+    Test Validation
+    1. Validate if recommendation calls are success
+    2. Validate kubernetes objects of request payload of results, experiment endpoints and response payload of
+    recommendation endpoint.
     """
+
     input_json_file = "../json_files/create_exp.json"
     result_json_file = "../json_files/update_results.json"
 
@@ -1001,6 +1014,7 @@ def test_list_recommendations_for_diff_reco_terms_with_only_latest(test_name, nu
         update_results_json_file = "/tmp/update_results_" + str(i) + ".json"
 
         result_json_arr = []
+        result_batch = []
         # Get the experiment name
         json_data = json.load(open(create_exp_json_file))
         experiment_name = json_data[0]['experiment_name']
@@ -1017,25 +1031,26 @@ def test_list_recommendations_for_diff_reco_terms_with_only_latest(test_name, nu
             result_json[0]['interval_start_time'] = start_time
             end_time = increment_timestamp_by_given_mins(start_time, 15)
             result_json[0]['interval_end_time'] = end_time
-
-            write_json_data_to_file(update_results_json_file, result_json)
             result_json_arr.append(result_json[0])
-            response = update_results(update_results_json_file, logging)
+            result_batch.append(result_json[0])
+            if (len(result_batch) == 100): # Call updateResults API for every 100 datapoints
+                write_json_data_to_file(update_results_json_file, result_batch)
+                response = update_results(update_results_json_file, logging)
+                data = response.json()
+                print("message = ", data['message'])
+                assert response.status_code == SUCCESS_STATUS_CODE
+                assert data['status'] == SUCCESS_STATUS
+                assert data['message'] == UPDATE_RESULTS_SUCCESS_MSG
+                result_batch = []
 
+        if (len(result_batch) > 0): # Handle last batch of metrics datapoints
+            write_json_data_to_file(update_results_json_file, result_batch)
+            response = update_results(update_results_json_file, logging)
             data = response.json()
             print("message = ", data['message'])
             assert response.status_code == SUCCESS_STATUS_CODE
             assert data['status'] == SUCCESS_STATUS
             assert data['message'] == UPDATE_RESULTS_SUCCESS_MSG
-
-            update_recommendations(experiment_name, None, end_time)
-
-            # Get the experiment name
-            json_data = json.load(open(create_exp_json_file))
-            experiment_name = json_data[0]['experiment_name']
-
-            response = list_recommendations(experiment_name, rm=True)
-            assert response.status_code == SUCCESS_200_STATUS_CODE
 
         list_of_result_json_arr.append(result_json_arr)
 
