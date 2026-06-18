@@ -67,6 +67,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.autotune.analyzer.utils.AnalyzerConstants.LOCAL;
 import static com.autotune.analyzer.utils.AnalyzerConstants.REMOTE;
@@ -89,7 +90,7 @@ import static com.autotune.utils.KruizeConstants.KRUIZE_BULK_API.JOB_ID;
 public class RecommendationsResource extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(RecommendationsResource.class);
-    private static int requestCount = 0;
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -257,7 +258,7 @@ public class RecommendationsResource extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int calCount = ++requestCount;
+        int calCount = counter.incrementAndGet();
         LOGGER.debug("RecommendationsResource POST request received - count: {}", calCount);
         String statusValue = KruizeConstants.APIMessages.FAILURE;
         Timer.Sample timerBRecommendationResource = Timer.start(MetricsConfig.meterRegistry());
@@ -343,14 +344,18 @@ public class RecommendationsResource extends HttpServlet {
                     if (kubernetesAPIObject.getContainerAPIObjects() != null) {
                         for (ContainerAPIObject containerAPIObject : kubernetesAPIObject.getContainerAPIObjects()) {
                             ContainerRecommendations recommendations = containerAPIObject.getContainerRecommendations();
-                            processRecommendations(recommendations.getData().values());
+                            if (recommendations != null) {
+                                processRecommendations(recommendations.getData().values());
+                            }
                         }
                     }
 
                     // Handle namespace recommendations
                     if (kubernetesAPIObject.getNamespaceAPIObject() != null) {
                         NamespaceRecommendations recommendations = kubernetesAPIObject.getNamespaceAPIObject().getNamespaceRecommendations();
-                        processRecommendations(recommendations.getData().values());
+                        if (recommendations != null) {
+                            processRecommendations(recommendations.getData().values());
+                        }
                     }
                 }
                 listRecommendationsAPIObject.setApiVersion(CURRENT_RECOMMENDATIONS_API_VERSION);
