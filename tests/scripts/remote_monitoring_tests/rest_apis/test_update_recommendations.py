@@ -521,6 +521,9 @@ def test_update_recommendations_with_unknown_interval_end_time(cluster_type):
     assert response.status_code == ERROR_STATUS_CODE
     assert data['message'] == UPDATE_RECOMMENDATIONS_METRICS_NOT_FOUND + start_time + " to " + end_time
 
+    # Delete the experiment
+    response = delete_experiment(create_exp_json_file)
+    print("delete exp = ", response.status_code)
 
 @pytest.mark.negative
 def test_update_recommendations_with_end_time_precede_start_time(cluster_type):
