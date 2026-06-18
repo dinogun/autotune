@@ -2761,118 +2761,119 @@ def test_list_recommendations_cpu_mem_optimised(cluster_type: str):
                 aggre_info["min"] = OPTIMISED_MEMORY
                 aggre_info["max"] = OPTIMISED_MEMORY
 
-            write_json_data_to_file(update_results_json_file, result_json)
             result_json_arr.append(result_json[0])
-            response = update_results(update_results_json_file)
+            if (len(result_json_arr) == 100):
+                write_json_data_to_file(update_results_json_file, result_json_arr)
+                response = update_results(update_results_json_file)
+                data = response.json()
+                print("message = ", data['message'])
+                result_json_arr = []
 
+        if (len(result_json_arr) > 0):
+            write_json_data_to_file(update_results_json_file, result_json_arr)
+            response = update_results(update_results_json_file)
             data = response.json()
             print("message = ", data['message'])
 
-            if j > 95:
-                response = update_recommendations(experiment_name, None, end_time)
-                data = response.json()
-                assert response.status_code == SUCCESS_STATUS_CODE
-                assert data[0]['experiment_name'] == experiment_name
 
-                # Get the experiment name
-                json_data = json.load(open(create_exp_json_file))
-                experiment_name = json_data[0]['experiment_name']
+        response = update_recommendations(experiment_name, None, end_time)
+        data = response.json()
+        assert response.status_code == SUCCESS_STATUS_CODE
+        assert data[0]['experiment_name'] == experiment_name
 
-                response = list_recommendations(experiment_name, rm=True)
-                assert response.status_code == SUCCESS_200_STATUS_CODE
+        # Get the experiment name
+        json_data = json.load(open(create_exp_json_file))
+        experiment_name = json_data[0]['experiment_name']
 
-                recommendation_json = response.json()
+        response = list_recommendations(experiment_name, rm=True)
+        assert response.status_code == SUCCESS_200_STATUS_CODE
 
-                recommendation_section = None
+        recommendation_json = response.json()
 
-                for containers in recommendation_json[0]["kubernetes_objects"][0]["containers"]:
-                    actual_container_name = containers["container_name"]
-                    print(
-                        f"actual container name = {actual_container_name}  expected container name = {container_name_to_update}")
-                    if containers["container_name"] == container_name_to_update:
-                        recommendation_section = containers["recommendations"]
-                        break
+        recommendation_section = None
 
-                assert recommendation_section is not None
+        for containers in recommendation_json[0]["kubernetes_objects"][0]["containers"]:
+            actual_container_name = containers["container_name"]
+            print(
+                f"actual container name = {actual_container_name}  expected container name = {container_name_to_update}")
+            if containers["container_name"] == container_name_to_update:
+                recommendation_section = containers["recommendations"]
+                break
 
-                high_level_notifications = recommendation_section["notifications"]
+        assert recommendation_section is not None
 
-                # Check for Recommendation level notifications
-                assert INFO_RECOMMENDATIONS_AVAILABLE_CODE in high_level_notifications
+        high_level_notifications = recommendation_section["notifications"]
 
-                data_section = recommendation_section["data"]
-                # Check if recommendation exists
-                assert str(end_time) in data_section
-                # Check for timestamp level notifications
-                timestamp_level_notifications = data_section[str(end_time)]["notifications"]
-                assert INFO_SHORT_TERM_RECOMMENDATIONS_AVAILABLE_CODE in timestamp_level_notifications
+        # Check for Recommendation level notifications
+        assert INFO_RECOMMENDATIONS_AVAILABLE_CODE in high_level_notifications
 
-                # Check for current recommendation
-                recommendation_current = None
-                if "current" in data_section[str(end_time)]:
-                    recommendation_current = data_section[str(end_time)]["current"]
+        data_section = recommendation_section["data"]
+        # Check if recommendation exists
+        assert str(end_time) in data_section
+        # Check for timestamp level notifications
+        timestamp_level_notifications = data_section[str(end_time)]["notifications"]
+        assert INFO_SHORT_TERM_RECOMMENDATIONS_AVAILABLE_CODE in timestamp_level_notifications
 
-                short_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["short_term"]
-                medium_term_recommendation = None
-                long_term_recommendation = None
-                if j > 671:  # 7 days
-                    medium_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["medium_term"]
-                if j > 1439:  # 15 days
-                    long_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["long_term"]
+        # Check for current recommendation
+        recommendation_current = None
+        if "current" in data_section[str(end_time)]:
+            recommendation_current = data_section[str(end_time)]["current"]
 
-                if INFO_COST_RECOMMENDATIONS_AVAILABLE_CODE in short_term_recommendation["notifications"]:
-                    validate_recommendation_for_cpu_mem_optimised(recommendations=short_term_recommendation,
-                                                                  current=recommendation_current,
-                                                                  profile="cost")
+        short_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["short_term"]
+        medium_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["medium_term"]
+        long_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["long_term"]
 
-                    if j > 671:
-                        validate_recommendation_for_cpu_mem_optimised(recommendations=medium_term_recommendation,
-                                                                      current=recommendation_current,
-                                                                      profile="cost")
-                    if j > 1439:
-                        validate_recommendation_for_cpu_mem_optimised(recommendations=long_term_recommendation,
-                                                                      current=recommendation_current,
-                                                                      profile="cost")
+        if INFO_COST_RECOMMENDATIONS_AVAILABLE_CODE in short_term_recommendation["notifications"]:
+            validate_recommendation_for_cpu_mem_optimised(recommendations=short_term_recommendation,
+                                                          current=recommendation_current,
+                                                          profile="cost")
+        if INFO_COST_RECOMMENDATIONS_AVAILABLE_CODE in medium_term_recommendation["notifications"]:
+            validate_recommendation_for_cpu_mem_optimised(recommendations=medium_term_recommendation,
+                                                              current=recommendation_current,
+                                                              profile="cost")
+        if INFO_COST_RECOMMENDATIONS_AVAILABLE_CODE in long_term_recommendation["notifications"]:
+                validate_recommendation_for_cpu_mem_optimised(recommendations=long_term_recommendation,
+                                                              current=recommendation_current,
+                                                              profile="cost")
 
-                if INFO_PERFORMANCE_RECOMMENDATIONS_AVAILABLE_CODE in short_term_recommendation["notifications"]:
-                    validate_recommendation_for_cpu_mem_optimised(recommendations=short_term_recommendation,
-                                                                  current=recommendation_current,
-                                                                  profile="performance")
+        if INFO_PERFORMANCE_RECOMMENDATIONS_AVAILABLE_CODE in short_term_recommendation["notifications"]:
+            validate_recommendation_for_cpu_mem_optimised(recommendations=short_term_recommendation,
+                                                          current=recommendation_current,
+                                                          profile="performance")
+        if INFO_PERFORMANCE_RECOMMENDATIONS_AVAILABLE_CODE in medium_term_recommendation["notifications"]:
+            validate_recommendation_for_cpu_mem_optimised(recommendations=medium_term_recommendation,
+                                                          current=recommendation_current,
+                                                          profile="performance")
+        if INFO_PERFORMANCE_RECOMMENDATIONS_AVAILABLE_CODE in long_term_recommendation["notifications"]:
+            validate_recommendation_for_cpu_mem_optimised(recommendations=long_term_recommendation,
+                                                          current=recommendation_current,
+                                                          profile="performance")
 
-                    if j > 671:
-                        validate_recommendation_for_cpu_mem_optimised(recommendations=medium_term_recommendation,
-                                                                      current=recommendation_current,
-                                                                      profile="performance")
-                    if j > 1439:
-                        validate_recommendation_for_cpu_mem_optimised(recommendations=long_term_recommendation,
-                                                                      current=recommendation_current,
-                                                                      profile="performance")
+        short_term_recommendation_cost_notifications = \
+            short_term_recommendation["recommendation_engines"]["cost"]["notifications"]
+        short_term_recommendation_perf_notifications = \
+            short_term_recommendation["recommendation_engines"]["performance"]["notifications"]
 
-                short_term_recommendation_cost_notifications = \
-                    short_term_recommendation["recommendation_engines"]["cost"]["notifications"]
-                short_term_recommendation_perf_notifications = \
-                    short_term_recommendation["recommendation_engines"]["performance"]["notifications"]
+        check_optimised_codes(short_term_recommendation_cost_notifications,
+                              short_term_recommendation_perf_notifications)
 
-                check_optimised_codes(short_term_recommendation_cost_notifications,
-                                      short_term_recommendation_perf_notifications)
 
-                if j > 672:
-                    medium_term_recommendation_cost_notifications = \
-                        medium_term_recommendation["recommendation_engines"]["cost"]["notifications"]
-                    medium_term_recommendation_perf_notifications = \
-                        medium_term_recommendation["recommendation_engines"]["performance"]["notifications"]
+        medium_term_recommendation_cost_notifications = \
+            medium_term_recommendation["recommendation_engines"]["cost"]["notifications"]
+        medium_term_recommendation_perf_notifications = \
+            medium_term_recommendation["recommendation_engines"]["performance"]["notifications"]
 
-                    check_optimised_codes(medium_term_recommendation_cost_notifications,
-                                          medium_term_recommendation_perf_notifications)
+        check_optimised_codes(medium_term_recommendation_cost_notifications,
+                              medium_term_recommendation_perf_notifications)
 
-                if j > 1439:
-                    long_term_recommendation_cost_notifications = \
-                        long_term_recommendation["recommendation_engines"]["cost"]["notifications"]
-                    long_term_recommendation_perf_notifications = \
-                        long_term_recommendation["recommendation_engines"]["performance"]["notifications"]
 
-                    check_optimised_codes(long_term_recommendation_cost_notifications,
-                                          long_term_recommendation_perf_notifications)
+        long_term_recommendation_cost_notifications = \
+            long_term_recommendation["recommendation_engines"]["cost"]["notifications"]
+        long_term_recommendation_perf_notifications = \
+            long_term_recommendation["recommendation_engines"]["performance"]["notifications"]
+
+        check_optimised_codes(long_term_recommendation_cost_notifications,
+                              long_term_recommendation_perf_notifications)
 
     # Delete the experiments
     for i in range(num_exps):
