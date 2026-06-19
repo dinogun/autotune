@@ -344,7 +344,7 @@ public class RecommendationsResource extends HttpServlet {
                     if (kubernetesAPIObject.getContainerAPIObjects() != null) {
                         for (ContainerAPIObject containerAPIObject : kubernetesAPIObject.getContainerAPIObjects()) {
                             ContainerRecommendations recommendations = containerAPIObject.getContainerRecommendations();
-                            if (recommendations != null) {
+                            if (recommendations != null && recommendations.getData() != null && !recommendations.getData().isEmpty()) {
                                 processRecommendations(recommendations.getData().values());
                             }
                         }
@@ -353,7 +353,7 @@ public class RecommendationsResource extends HttpServlet {
                     // Handle namespace recommendations
                     if (kubernetesAPIObject.getNamespaceAPIObject() != null) {
                         NamespaceRecommendations recommendations = kubernetesAPIObject.getNamespaceAPIObject().getNamespaceRecommendations();
-                        if (recommendations != null) {
+                        if (recommendations != null && recommendations.getData() != null && !recommendations.getData().isEmpty()) {
                             processRecommendations(recommendations.getData().values());
                         }
                     }
