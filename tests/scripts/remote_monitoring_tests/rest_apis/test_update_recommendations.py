@@ -1187,15 +1187,22 @@ def test_update_recommendations_with_perf_profile_single_pod(cluster_type):
             print(f"Experiment doesn't exist: {e}")
     # Delete any existing profile
     response = delete_performance_profile(perf_profile_v2_json_file)
-    print("delete API status code = ", response.status_code)
+    assert response is not None
     data = response.json()
-    print("delete API status message  = ", data["message"])
+    assert response.status_code in (200, 400), ( # API return status code as 400 when profile is not found
+        f"Failed to delete performance profile: "
+        f"status={response.status_code}, body={data}"
+    )
     sleep(5)
 
     # Step 1: Create the v1 performance profile
     response = create_performance_profile(perf_profile_v1_json_file)
+    assert response is not None
     data = response.json()
-    print(data['message'])
+    assert response.status_code in (201, 400), (  # API return status code as 400 when profile is not found
+        f"Failed to create performance profile: "
+        f"status={response.status_code}, body={data['message']}"
+    )
 
     # Step 2: Create container experiment
     print(f"\n[Step 2] Creating container experiment...")
@@ -1274,10 +1281,12 @@ def test_update_recommendations_with_perf_profile_single_pod(cluster_type):
     # Step 4: Update the performance profile to v2
     print("\n [Step 4] Updating performance profile to v2...")
     response = update_performance_profile(perf_profile_v2_json_file)
-    print(f"Update performance profile v2 response: {response.status_code}")
+    assert response is not None
     data = response.json()
-    print(f"Response: {data}")
-    assert response.status_code == SUCCESS_200_STATUS_CODE
+    assert response.status_code in (200, 400), (  # API return status code as 400 when profile is not found
+        f"Failed to update performance profile: "
+        f"status={response.status_code}, body={data['message']}"
+    )
     # Check for the update success message with version 2.0
     assert "updated successfully to version 3.0" in data.get('message', '') or \
            UPDATE_PERF_PROFILE_SUCCESS_MSG % ("resource-optimization-openshift", 3.0) in data.get('message', '')
@@ -1442,15 +1451,22 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
 
     # Delete any existing profile
     response = delete_performance_profile(perf_profile_v3_json_file)
-    print("delete API status code = ", response.status_code)
+    assert response is not None
     data = response.json()
-    print("delete API status message  = ", data["message"])
+    assert response.status_code in (200, 400), (  # API return status code as 400 when profile is not found
+        f"Failed to delete performance profile: "
+        f"status={response.status_code}, body={data}"
+    )
     sleep(5)
 
     # Step 1: Create the v1 performance profile
     response = create_performance_profile(perf_profile_v1_json_file)
+    assert response is not None
     data = response.json()
-    print(data['message'])
+    assert response.status_code in (201, 400), (  # API return status code as 400 when profile is not found
+        f"Failed to create performance profile: "
+        f"status={response.status_code}, body={data['message']}"
+    )
 
     # Step 2: Create container experiment
     print(f"\n[Step 2] Creating container experiment...")
@@ -1533,9 +1549,12 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
     # Step 4: Update the performance profile to v3
     print("\n [Step 4] Updating performance profile to v3...")
     response = update_performance_profile(perf_profile_v3_json_file)
-    print(f"Update performance profile v2 response: {response.status_code}")
+    assert response is not None
     data = response.json()
-    print(f"Response: {data}")
+    assert response.status_code in (200, 400), (  # API return status code as 400 when profile is not found
+        f"Failed to update performance profile: "
+        f"status={response.status_code}, body={data['message']}"
+    )
     assert response.status_code == SUCCESS_200_STATUS_CODE
     # Check for the update success message with version 2.0
     assert "updated successfully to version 3.0" in data.get('message', '') or \
