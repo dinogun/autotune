@@ -105,11 +105,12 @@ def get_variation_schema():
     }
 
 
-def get_current_schema():
+def get_current_schema(namespace_type=False):
     """Returns the schema for current resource configuration."""
-    return {
+    schema = {
         "type": "object",
         "properties": {
+            "replicas": {"type": "number"},
             "requests": {
                 "type": "object",
                 "properties": {
@@ -120,8 +121,14 @@ def get_current_schema():
             },
             "limits": get_limits_schema()
         },
-        "required": []
+        "required": ["replicas"]
     }
+
+    if namespace_type:
+        schema["properties"].pop("replicas")
+        schema["required"].remove("replicas")
+
+    return schema
 
 
 def get_plot_metrics_schema():
@@ -196,7 +203,7 @@ def get_recommendation_engine_schema(engine_type="cost"):
 # RECOMMENDATION TERM SCHEMAS
 # ============================================================================
 
-def get_term_schema_with_data(include_plots=True):
+def get_term_schema_with_data(include_plots=True, namespace_type=False):
     """
     Returns the schema for a recommendation term with full data.
     
@@ -209,6 +216,21 @@ def get_term_schema_with_data(include_plots=True):
             "notifications": get_notification_schema(),
             "monitoring_start_time": {"type": "string"},
             "duration_in_hours": {"type": "number"},
+            "metrics_info": {
+                "type": "object",
+                "properties": {
+                    "pod_count": {
+                        "type": "object",
+                        "properties": {
+                            "avg": {"type": "number"},
+                            "max": {"type": "number"},
+                            "min": {"type": "number"}
+                        },
+                        "required": ["avg", "max", "min"]
+                    }
+                },
+                "required": ["pod_count"]
+            },
             "recommendation_engines": {
                 "type": "object",
                 "properties": {
@@ -218,9 +240,13 @@ def get_term_schema_with_data(include_plots=True):
                 "required": []
             }
         },
-        "required": []
+        "required": ["metrics_info"]
     }
-    
+
+    if namespace_type: # Not applicable for namespace recommendations
+        schema["properties"].pop("metrics_info")
+        schema["required"].remove("metrics_info")
+
     if include_plots:
         schema["properties"]["plots"] = get_plots_schema()
     
@@ -243,7 +269,7 @@ def get_term_schema_notification_only():
 # RECOMMENDATION TERMS BUILDER
 # ============================================================================
 
-def build_recommendation_terms_schema(terms_config):
+def build_recommendation_terms_schema(terms_config, namespace_type=False):
     """
     Builds the recommendation_terms schema based on configuration.
     
@@ -266,9 +292,9 @@ def build_recommendation_terms_schema(terms_config):
     
     for term, term_type in terms_config.items():
         if term_type == "full":
-            schema["properties"][term] = get_term_schema_with_data(include_plots=True)
+            schema["properties"][term] = get_term_schema_with_data(include_plots=True, namespace_type=namespace_type)
         elif term_type == "full_no_plots":
-            schema["properties"][term] = get_term_schema_with_data(include_plots=False)
+            schema["properties"][term] = get_term_schema_with_data(include_plots=False, namespace_type=namespace_type)
         elif term_type == "notification_only":
             schema["properties"][term] = get_term_schema_notification_only()
     
@@ -336,8 +362,8 @@ def get_namespace_recommendations_schema(terms_config):
                         "properties": {
                             "notifications": get_notification_schema(),
                             "monitoring_end_time": {"type": "string"},
-                            "current": get_current_schema(),
-                            "recommendation_terms": build_recommendation_terms_schema(terms_config)
+                            "current": get_current_schema(namespace_type=True),
+                            "recommendation_terms": build_recommendation_terms_schema(terms_config, True)
                         },
                         "required": []
                     }
