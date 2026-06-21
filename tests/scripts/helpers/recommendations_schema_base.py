@@ -509,3 +509,6 @@ ALL_TERMS_CONFIG = {
 BASIC_CONFIG = {
     "short_term": "full"
 }
+
+NO_TERMS_CONFIG = {
+}

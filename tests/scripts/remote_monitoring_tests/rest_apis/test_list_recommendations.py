@@ -88,20 +88,16 @@ term_input_for_missing_terms_non_contiguous = [
 ]
 
 invalid_term_input = [
-    ("short_term_test_no_data_point", 0, list_reco_json_schema, 0, True),
-    ("short_term_test_1_data_point", 1, list_reco_json_schema, 0.25, True),
-    ("medium_term_test_191_data_points", 191, medium_term_list_reco_json_schema, 47.8, False),
-    ("long_term_test_true", 767, long_term_list_reco_json_schema, 191.8, False),
+    ("short_term_test_no_data_point", 0, no_terms_reco_json_schema, 0, True),
+    ("short_term_test_1_data_point", 1, no_terms_reco_json_schema, 0.25, True),
+    ("medium_term_test_191_data_points", 191, short_term_list_reco_json_schema, 47.8, False),
+    ("long_term_test_true", 767, medium_term_list_reco_json_schema, 191.8, False),
 ]
 
 term_input_exceeding_limit = [
-    ("short_term_test_non_contiguous_2_data_points_exceeding_24_hours", 2, list_reco_json_schema, 0.5, 1440, True),
-    ("medium_term_test_non_contiguous_192_data_points_exceeding_7_days", 192, medium_term_list_reco_json_schema, 48.0,
-     420, False),
-    (
-        "long_term_test_non_contiguous_768_data_points_exceeding_15_days", 768, long_term_list_reco_json_schema, 192.0,
-        360,
-        False)
+    ("short_term_test_non_contiguous_2_data_points_exceeding_24_hours", 2, no_terms_reco_json_schema, 0.5, 1440, True),
+    ("medium_term_test_non_contiguous_192_data_points_exceeding_7_days", 192, short_term_list_reco_json_schema, 48.0, 420, False),
+    ("long_term_test_non_contiguous_768_data_points_exceeding_15_days", 768, short_and_medium_term_list_reco_json_schema, 192.0, 360, False)
 ]
 
 profile_notifications = [

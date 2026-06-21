@@ -1379,6 +1379,10 @@ def test_update_recommendations_with_perf_profile_single_pod(cluster_type):
 
     # Cleanup: Delete all experiments
     print("\n[Cleanup] Deleting all experiments...")
+
+    response = delete_experiment(input_json_file)
+    print(f"Delete {experiment_name} experiment: {response.status_code}")
+
     for exp in experiments:
         response = delete_experiment(exp["exp_file"])
         print(f"Delete {exp['name']} experiment: {response.status_code}")
@@ -1541,10 +1545,6 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
     validate_reco_json(create_exp_json[0], update_results_json, list_reco_json[0], expected_duration_in_hours)
 
     print(f"{experiments[0]['name']} experiment recommendations validated successfully")
-
-    # Cleanup: Delete container experiments
-    response = delete_experiment(input_json_file)
-    print(f"Delete {experiment_name} experiment: {response.status_code}")
         
     # Step 4: Update the performance profile to v3
     print("\n [Step 4] Updating performance profile to v3...")
@@ -1648,6 +1648,10 @@ def test_update_recommendations_with_perf_profile_multi_pod(cluster_type):
 
     # Cleanup: Delete all experiments
     print("\n[Cleanup] Deleting all experiments...")
+
+    response = delete_experiment(input_json_file)
+    print(f"Delete {experiment_name} experiment: {response.status_code}")
+
     for exp in experiments:
         response = delete_experiment(exp["exp_file"])
         print(f"Delete {exp['name']} experiment: {response.status_code}")
