@@ -110,7 +110,7 @@ def get_current_schema(namespace_type=False):
     schema = {
         "type": "object",
         "properties": {
-            "replicas": {"type": "number"},
+            "replicas": {"type": "integer"},
             "requests": {
                 "type": "object",
                 "properties": {
@@ -222,9 +222,9 @@ def get_term_schema_with_data(include_plots=True, namespace_type=False):
                     "pod_count": {
                         "type": "object",
                         "properties": {
-                            "avg": {"type": "number"},
-                            "max": {"type": "number"},
-                            "min": {"type": "number"}
+                            "avg": {"type": "integer"},
+                            "max": {"type": "integer"},
+                            "min": {"type": "integer"}
                         },
                         "required": ["avg", "max", "min"]
                     }

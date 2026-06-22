@@ -2369,7 +2369,7 @@ def validate_metrics_info(metrics_info):
     pod_count = metrics_info[pod_count_key]
     for metric in ["avg", "max", "min"]:
         assert metric in pod_count, KEY_MISSING_MSG % metric
-        assert isinstance(pod_count[metric], (int, float)), VALUE_TYPE_INVALID_MSG % (metric, type(pod_count[metric]))
+        assert isinstance(pod_count[metric], int), VALUE_TYPE_INVALID_MSG % (metric, type(pod_count[metric]))
         assert pod_count[metric] >= 0, VALUE_NEGATIVE_MSG % (metric, type(pod_count[metric]))
         assert pod_count["min"] <= pod_count["avg"], MIN_GREATER_THAN_AVG_MSG
         assert pod_count["avg"] <= pod_count["max"], AVG_GREATER_THAN_MAX_MSG
