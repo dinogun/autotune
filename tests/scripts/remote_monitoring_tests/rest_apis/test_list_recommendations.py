@@ -91,7 +91,7 @@ invalid_term_input = [
     ("short_term_test_no_data_point", 0, no_terms_reco_json_schema, 0, True),
     ("short_term_test_1_data_point", 1, no_terms_reco_json_schema, 0.25, True),
     ("medium_term_test_191_data_points", 191, short_term_list_reco_json_schema, 47.8, False),
-    ("long_term_test_true", 767, medium_term_list_reco_json_schema, 191.8, False),
+    ("long_term_test_true", 767, short_and_medium_term_list_reco_json_schema, 191.8, False),
 ]
 
 term_input_exceeding_limit = [
