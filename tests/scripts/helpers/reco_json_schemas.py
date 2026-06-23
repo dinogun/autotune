@@ -1,6 +1,7 @@
 from helpers.recommendations_schema_base import *
 
 all_terms_list_reco_json_schema = build_list_recommendations_schema(ALL_TERMS_CONFIG)
+no_terms_reco_json_schema = build_list_recommendations_schema(NO_TERMS_CONFIG)
 list_reco_json_local_monitoring_schema = build_list_recommendations_schema(BASIC_CONFIG)
 list_reco_namespace_json_local_monitoring_schema = build_list_recommendations_schema(BASIC_CONFIG, include_namespaces=True)
 list_reco_json_schema = build_list_recommendations_schema(BASIC_CONFIG)
@@ -12,3 +13,4 @@ medium_term_namespace_reco_json_schema = build_list_recommendations_schema(SHORT
 short_and_long_term_list_reco_json_schema = build_list_recommendations_schema(SHORT_LONG_TERM_CONFIG)
 short_and_medium_term_list_reco_json_schema = build_list_recommendations_schema(SHORT_MEDIUM_TERM_CONFIG)
 short_term_list_reco_json_schema = build_list_recommendations_schema(SHORT_TERM_CONFIG)
+

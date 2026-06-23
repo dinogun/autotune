@@ -149,6 +149,17 @@ LIST_LAYERS_INVALID_LAYER_NAME_MSG = "Given layer name - %s either does not exis
 LIST_LAYERS_NO_LAYERS_FOUND_MSG = "No layers found!"
 LIST_LAYERS_INVALID_QUERY_PARAM_MSG = "The query param(s) - [%s] is/are invalid"
 
+# Recommendations API messages
+MISSING_REPLICA_OBJECT = "replicas key missing in current config"
+INCORRECT_REPLICA_DATATYPE = "replicas should be int, found %s"
+REPLICAS_CANNOT_BE_ZERO = "replicas should be > 0, found %s"
+POD_COUNT_KEY_MISSING_MSG = "pod_count key missing in metrics_info"
+KEY_MISSING_MSG = "{} key missing in pod_count"
+VALUE_TYPE_INVALID_MSG = "{} value should be numeric, found {}"
+VALUE_NEGATIVE_MSG = "{} value should be >= 0, found {}"
+MIN_GREATER_THAN_AVG_MSG = "min pod count cannot be greater than avg"
+AVG_GREATER_THAN_MAX_MSG = "avg pod count cannot be greater than max"
+REQUEST_CANNOT_BE_GREATER_THAN_LIMITS = "{} in requests should be less than that of limits"
 
 # Kruize Recommendations Notification codes
 NOTIFICATION_CODE_FOR_RECOMMENDATIONS_AVAILABLE = "111000"
@@ -170,6 +181,12 @@ NOTIFICATION_CODE_FOR_CPU_REQUEST_NOT_SET = "523001"
 NOTIFICATION_CODE_FOR_CPU_LIMIT_NOT_SET = "423001"
 NOTIFICATION_CODE_FOR_MEMORY_REQUEST_NOT_SET = "524001"
 NOTIFICATION_CODE_FOR_MEMORY_LIMIT_NOT_SET = "524002"
+NOTIFICATION_CODE_FOR_POD_COUNT_DERIVED_FROM_CPU = "321001"
+NOTIFICATION_CODE_FOR_POD_COUNT_DERIVED_FROM_CPU_MESSAGE = "Pod count is derived from CPU usage metric data"
+NOTIFICATION_CODE_FOR_POD_COUNT_DERIVED_FROM_MEMORY = "321002"
+NOTIFICATION_CODE_FOR_POD_COUNT_DERIVED_FROM_MEMORY_MESSAGE = "Pod count is derived from Memory usage metric data"
+NOTIFICATION_CODE_FOR_NOT_ENOUGH_DATA_FOR_POD_COUNT = "221005"
+NOTIFICATION_CODE_FOR_NOT_ENOUGH_DATA_FOR_POD_COUNT_MESSAGE = "Not enough data available to determine Pod Count"
 
 AMOUNT_MISSING_IN_CPU_SECTION_CODE = "223001"
 INVALID_AMOUNT_IN_CPU_SECTION_CODE = "223002"
@@ -828,7 +845,11 @@ def validate_container(update_results_container, update_results_json, list_reco_
 
             if check_if_recommendations_are_present(list_reco_container["recommendations"]):
                 terms_obj = list_reco_container["recommendations"]["data"][interval_end_time]["recommendation_terms"]
+
                 current_config = list_reco_container["recommendations"]["data"][interval_end_time]["current"]
+                # validate current config
+                assert current_config is not None
+                validate_current(current_config, CONTAINER_EXPERIMENT_TYPE)
 
                 duration_terms = {'short_term': 4, 'medium_term': 7, 'long_term': 15}
                 for term in duration_terms.keys():
@@ -837,6 +858,10 @@ def validate_container(update_results_container, update_results_json, list_reco_
                         # Validate timestamps [deprecated as monitoring end time is moved to higher level]
                         # assert cost_obj[term]["monitoring_end_time"] == interval_end_time, \
                         #    f"monitoring end time {cost_obj[term]['monitoring_end_time']} did not match end timestamp {interval_end_time}"
+
+                        # validate metrics_info object
+                        if "metrics_info" in terms_obj[term]:
+                            validate_metrics_info(terms_obj[term]["metrics_info"])
 
                         # Validate the precision of the valid duration
                         duration = terms_obj[term]["duration_in_hours"]
@@ -1019,7 +1044,11 @@ def validate_local_monitoring_container(create_exp_container, list_reco_containe
         print(f"interval_end_time = {interval_end_time}")
 
         terms_obj = list_reco_container["recommendations"]["data"][interval_end_time]["recommendation_terms"]
+
         current_config = list_reco_container["recommendations"]["data"][interval_end_time]["current"]
+        # validate current config
+        assert current_config is not None
+        validate_current(current_config, CONTAINER_EXPERIMENT_TYPE)
 
         duration_terms = {'short_term': 4, 'medium_term': 7, 'long_term': 15}
         for term in duration_terms.keys():
@@ -1030,6 +1059,11 @@ def validate_local_monitoring_container(create_exp_container, list_reco_containe
                 #    f"monitoring end time {cost_obj[term]['monitoring_end_time']} did not match end timestamp {interval_end_time}"
 
                 interval_start_time = list_reco_container['recommendations']['data'][interval_end_time]['recommendation_terms'][term]['monitoring_start_time']
+
+                # validate metrics_info object
+                if "metrics_info" in terms_obj[term]:
+                    validate_metrics_info(terms_obj[term]["metrics_info"])
+
                 # Validate the precision of the valid duration
                 duration = terms_obj[term]["duration_in_hours"]
                 assert validate_duration_in_hours_decimal_precision(duration), f"The value '{duration}' for " \
@@ -2320,3 +2354,35 @@ def validate_metadata_workloads(metadata_json, namespace, workload, container):
         f"Validation failed: No entry found for namespace='{namespace}', "
         f"workload='{workload}', and container='{container}'."
     )
+
+def validate_metrics_info(metrics_info):
+    """
+    Validates metrics_info structure:
+
+    {
+        "pod_count": {
+            "avg": 2,
+            "max": 3,
+            "min": 1
+        }
+    }
+    """
+
+    pod_count_key = "pod_count"
+
+    assert pod_count_key in metrics_info, POD_COUNT_KEY_MISSING_MSG
+
+    pod_count = metrics_info[pod_count_key]
+    for metric in ["avg", "max", "min"]:
+        assert metric in pod_count, KEY_MISSING_MSG % metric
+        assert isinstance(pod_count[metric], int), VALUE_TYPE_INVALID_MSG % (metric, type(pod_count[metric]))
+        assert pod_count[metric] >= 0, VALUE_NEGATIVE_MSG % (metric, type(pod_count[metric]))
+        assert pod_count["min"] <= pod_count["avg"], MIN_GREATER_THAN_AVG_MSG
+        assert pod_count["avg"] <= pod_count["max"], AVG_GREATER_THAN_MAX_MSG
+
+
+def validate_current(current_config, experiment_type):
+    if experiment_type == CONTAINER_EXPERIMENT_TYPE:
+        assert "replicas" in current_config, MISSING_REPLICA_OBJECT
+        assert isinstance(current_config["replicas"], int), INCORRECT_REPLICA_DATATYPE % type(current_config['replicas'])
+        assert current_config["replicas"] > 0, REPLICAS_CANNOT_BE_ZERO % current_config['replicas']
