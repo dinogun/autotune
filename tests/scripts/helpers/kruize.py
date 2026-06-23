@@ -17,6 +17,14 @@ limitations under the License.
 import json
 import requests
 import subprocess
+import pytest
+
+# Global variable to control which API to use
+# This is set by conftest.py which reads the USE_NEW_RECOMMENDATION_API environment variable
+# The environment variable is set by test_autotune.sh or remote_monitoring_scale_test_bulk.sh via the --api-version parameter
+# Default to False (use old/legacy APIs for backward compatibility)
+USE_NEW_API = False
+
 
 def get_kruize_url():
     return URL
@@ -139,6 +147,7 @@ def update_results(result_json_file, logging=True):
 
 # Description: This function generates recommendation for the given experiment_name , start time and end time .
 def update_recommendations(experiment_name, startTime, endTime):
+
     print("\n************************************************************")
     print("\nUpdating the recommendation \n for %s for dates Start-time: %s and End-time: %s..." % (
         experiment_name, startTime, endTime))
@@ -149,8 +158,11 @@ def update_recommendations(experiment_name, startTime, endTime):
         queryString = queryString + "&interval_end_time=%s" % (endTime)
     if startTime:
         queryString = queryString + "&interval_start_time=%s" % (startTime)
-
-    url = URL + "/updateRecommendations?%s" % (queryString)
+    print("pytest.USE_NEW_API = ", pytest.USE_NEW_API)
+    if pytest.USE_NEW_API:
+        url = URL + "/kruize/api/v1/recommendations?%s" % (queryString)
+    else:
+        url = URL + "/updateRecommendations?%s" % (queryString)
     print("URL = ", url)
     response = requests.post(url, )
     print("Response status code = ", response.status_code)
@@ -164,7 +176,12 @@ def update_recommendations(experiment_name, startTime, endTime):
 def list_recommendations(experiment_name=None, latest=None, monitoring_end_time=None, rm=False):
     PARAMS = ""
     print("\nListing the recommendations...")
-    url = URL + "/listRecommendations"
+
+    print("pytest.USE_NEW_API = ", pytest.USE_NEW_API)
+    if pytest.USE_NEW_API:
+        url = URL + "/kruize/api/v1/recommendations"
+    else:
+        url = URL + "/listRecommendations"
     if rm:
         url += "?rm=true"
     print("URL = ", url)
@@ -528,6 +545,7 @@ def list_metric_profiles(name=None, verbose=None, logging=True):
 
 # Description: This function generates recommendation for the given experiment_name
 def generate_recommendations(experiment_name):
+
     print("\n************************************************************")
     print("\nGenerating the recommendation \n for %s..." % (
         experiment_name))
@@ -535,7 +553,10 @@ def generate_recommendations(experiment_name):
     if experiment_name:
         queryString = queryString + "experiment_name=%s" % (experiment_name)
 
-    url = URL + "/generateRecommendations%s" % (queryString)
+    if pytest.USE_NEW_API:
+        url = URL + "/kruize/api/v1/recommendations%s" % (queryString)
+    else:
+        url = URL + "/generateRecommendations%s" % (queryString)
     print("URL = ", url)
     response = requests.post(url, )
     print("Response status code = ", response.status_code)
