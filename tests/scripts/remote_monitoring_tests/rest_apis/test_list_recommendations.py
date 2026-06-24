@@ -2847,6 +2847,8 @@ def test_list_recommendations_cpu_mem_optimised(cluster_type: str):
         recommendation_current = None
         if "current" in data_section[str(end_time)]:
             recommendation_current = data_section[str(end_time)]["current"]
+            if pytest.USE_NEW_API:
+                recommendation_current.update(recommendation_current.pop("resources"))
 
         short_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["short_term"]
         medium_term_recommendation = data_section[str(end_time)]["recommendation_terms"]["medium_term"]

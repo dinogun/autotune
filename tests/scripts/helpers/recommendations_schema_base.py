@@ -24,6 +24,7 @@ across different recommendation schema files. It includes:
 - Factory functions to generate complete schemas
 """
 
+import pytest
 
 # ============================================================================
 # COMMON SCHEMA COMPONENTS
@@ -83,46 +84,101 @@ def get_limits_schema():
 
 def get_config_schema():
     """Returns the schema for configuration (requests and limits)."""
-    return {
-        "type": "object",
-        "properties": {
-            "requests": get_requests_schema(),
-            "limits": get_limits_schema()
-        },
-        "required": ["requests", "limits"]
-    }
+    if pytest.USE_NEW_API:
+        return {
+            "type": "object",
+            "properties": {
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "requests": get_requests_schema(),
+                        "limits": get_limits_schema()
+                    },
+                    "required": ["requests", "limits"]
+                }
+            },
+            "required": ["resources"]
+        }
+    else:
+        return {
+            "type": "object",
+            "properties": {
+                "requests": get_requests_schema(),
+                "limits": get_limits_schema()
+            },
+            "required": ["requests", "limits"]
+        }
 
 
 def get_variation_schema():
     """Returns the schema for variation (requests and limits)."""
-    return {
-        "type": "object",
-        "properties": {
-            "requests": get_requests_schema(),
-            "limits": get_limits_schema()
-        },
-        "required": ["requests", "limits"]
-    }
+    if pytest.USE_NEW_API:
+        return {
+            "type": "object",
+            "properties": {
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "requests": get_requests_schema(),
+                        "limits": get_limits_schema()
+                    },
+                    "required": ["requests", "limits"]
+                }
+            },
+            "required": ["resources"]
+        }
+    else:
+        return {
+            "type": "object",
+            "properties": {
+                "requests": get_requests_schema(),
+                "limits": get_limits_schema()
+            },
+            "required": ["requests", "limits"]
+        }
 
 
 def get_current_schema(namespace_type=False):
     """Returns the schema for current resource configuration."""
-    schema = {
-        "type": "object",
-        "properties": {
-            "replicas": {"type": "integer"},
-            "requests": {
-                "type": "object",
-                "properties": {
-                    "memory": get_resource_amount_schema(),
-                    "cpu": get_resource_amount_schema()
-                },
-                "required": []
+    if pytest.USE_NEW_API:
+        schema = {
+            "type": "object",
+            "properties": {
+                "replicas": {"type": "integer"},
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "requests": {
+                            "type": "object",
+                            "properties": {
+                                "memory": get_resource_amount_schema(),
+                                "cpu": get_resource_amount_schema()
+                            },
+                            "required": []
+                        },
+                        "limits": get_limits_schema()
+                    }
+                }
             },
-            "limits": get_limits_schema()
-        },
-        "required": ["replicas"]
-    }
+            "required": ["replicas"]
+        }
+    else:
+        schema = {
+            "type": "object",
+            "properties": {
+                "replicas": {"type": "integer"},
+                "requests": {
+                    "type": "object",
+                    "properties": {
+                        "memory": get_resource_amount_schema(),
+                        "cpu": get_resource_amount_schema()
+                    },
+                    "required": []
+                },
+                "limits": get_limits_schema()
+            },
+            "required": ["replicas"]
+        }
 
     if namespace_type:
         schema["properties"].pop("replicas")
@@ -326,7 +382,7 @@ def get_container_recommendations_schema(terms_config):
                             "notifications": get_notification_schema(),
                             "monitoring_end_time": {"type": "string"},
                             "current": get_current_schema(),
-                            "recommendation_terms": build_recommendation_terms_schema(terms_config)
+                            "recommendation_terms": build_recommendation_terms_schema(terms_config),
                         },
                         "required": []
                     }
@@ -363,7 +419,7 @@ def get_namespace_recommendations_schema(terms_config):
                             "notifications": get_notification_schema(),
                             "monitoring_end_time": {"type": "string"},
                             "current": get_current_schema(namespace_type=True),
-                            "recommendation_terms": build_recommendation_terms_schema(terms_config, True)
+                            "recommendation_terms": build_recommendation_terms_schema(terms_config, True),
                         },
                         "required": []
                     }

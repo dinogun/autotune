@@ -847,6 +847,8 @@ def validate_container(update_results_container, update_results_json, list_reco_
                 terms_obj = list_reco_container["recommendations"]["data"][interval_end_time]["recommendation_terms"]
 
                 current_config = list_reco_container["recommendations"]["data"][interval_end_time]["current"]
+                if pytest.USE_NEW_API:
+                    current_config.update(current_config.pop("resources"))
                 # validate current config
                 assert current_config is not None
                 validate_current(current_config, CONTAINER_EXPERIMENT_TYPE)
@@ -907,6 +909,9 @@ def validate_container(update_results_container, update_results_json, list_reco_
                             for engine_entry in engines_list:
                                 if engine_entry in terms_obj[term]["recommendation_engines"]:
                                     engine_obj = terms_obj[term]["recommendation_engines"][engine_entry]
+                                    if pytest.USE_NEW_API:
+                                        engine_obj["config"].update(engine_obj["config"].pop("resources"))
+                                        engine_obj["variation"].update(engine_obj["variation"].pop("resources"))
                                     validate_config(engine_obj["config"], metrics, experiment_type)
                                     validate_variation(current_config, engine_obj["config"], engine_obj["variation"])
                         # validate Plots data
@@ -954,7 +959,8 @@ def validate_namespace(update_results_namespace, update_results_json, list_reco_
             if check_if_recommendations_are_present(list_reco_namespace["recommendations"]):
                 terms_obj = list_reco_namespace["recommendations"]["data"][interval_end_time]["recommendation_terms"]
                 current_config = list_reco_namespace["recommendations"]["data"][interval_end_time]["current"]
-
+                if pytest.USE_NEW_API:
+                    current_config.update(current_config.pop("resources"))
                 duration_terms = {'short_term': 4, 'medium_term': 7, 'long_term': 15}
                 for term in duration_terms.keys():
                     if check_if_recommendations_are_present(terms_obj[term]):
@@ -1007,6 +1013,9 @@ def validate_namespace(update_results_namespace, update_results_json, list_reco_
                             for engine_entry in engines_list:
                                 if engine_entry in terms_obj[term]["recommendation_engines"]:
                                     engine_obj = terms_obj[term]["recommendation_engines"][engine_entry]
+                                    if pytest.USE_NEW_API:
+                                        engine_obj["config"].update(engine_obj["config"].pop("resources"))
+                                        engine_obj["variation"].update(engine_obj["variation"].pop("resources"))
                                     validate_config(engine_obj["config"], metrics, experiment_type)
                                     validate_variation(current_config, engine_obj["config"], engine_obj["variation"])
                         # validate Plots data for namespace experiment_type
@@ -1046,6 +1055,8 @@ def validate_local_monitoring_container(create_exp_container, list_reco_containe
         terms_obj = list_reco_container["recommendations"]["data"][interval_end_time]["recommendation_terms"]
 
         current_config = list_reco_container["recommendations"]["data"][interval_end_time]["current"]
+        if pytest.USE_NEW_API:
+            current_config.update(current_config.pop("resources"))
         # validate current config
         assert current_config is not None
         validate_current(current_config, CONTAINER_EXPERIMENT_TYPE)
@@ -1108,6 +1119,9 @@ def validate_local_monitoring_container(create_exp_container, list_reco_containe
                     for engine_entry in engines_list:
                         if engine_entry in terms_obj[term]["recommendation_engines"]:
                             engine_obj = terms_obj[term]["recommendation_engines"][engine_entry]
+                            if pytest.USE_NEW_API:
+                                engine_obj["config"].update(engine_obj["config"].pop("resources"))
+                                engine_obj["variation"].update(engine_obj["variation"].pop("resources"))
                             validate_config_local_monitoring(engine_obj["config"])
                             validate_variation_local_monitoring(current_config, engine_obj["config"], engine_obj["variation"], engine_obj)
                 # validate Plots data
@@ -1141,7 +1155,8 @@ def validate_local_monitoring_namespace(create_exp_namespace, list_reco_namespac
 
         terms_obj = list_reco_namespace["recommendations"]["data"][interval_end_time]["recommendation_terms"]
         current_config = list_reco_namespace["recommendations"]["data"][interval_end_time]["current"]
-
+        if pytest.USE_NEW_API:
+            current_config.update(current_config.pop("resources"))
         duration_terms = {'short_term': 4, 'medium_term': 7, 'long_term': 15}
         for term in duration_terms.keys():
             if check_if_recommendations_are_present(terms_obj[term]):
@@ -1192,6 +1207,9 @@ def validate_local_monitoring_namespace(create_exp_namespace, list_reco_namespac
                     for engine_entry in engines_list:
                         if engine_entry in terms_obj[term]["recommendation_engines"]:
                             engine_obj = terms_obj[term]["recommendation_engines"][engine_entry]
+                            if pytest.USE_NEW_API:
+                                engine_obj["config"].update(engine_obj["config"].pop("resources"))
+                                engine_obj["variation"].update(engine_obj["variation"].pop("resources"))
                             validate_config_local_monitoring(engine_obj["config"])
                             validate_variation_local_monitoring(current_config, engine_obj["config"], engine_obj["variation"], engine_obj)
                 # validate Plots data
@@ -1606,6 +1624,9 @@ def check_optimised_codes(cost_notifications, perf_notifications):
 def validate_recommendation_for_cpu_mem_optimised(recommendations: dict, current: dict, profile: str):
     assert "variation" in recommendations["recommendation_engines"][profile]
     assert "config" in recommendations["recommendation_engines"][profile]
+    if pytest.USE_NEW_API:
+        recommendations["recommendation_engines"][profile]["config"].update(recommendations["recommendation_engines"][profile]["config"].pop("resources"))
+
     assert recommendations["recommendation_engines"][profile]["config"]["requests"]["cpu"]["amount"] == current["requests"]["cpu"]["amount"]
     assert recommendations["recommendation_engines"][profile]["config"]["limits"]["cpu"]["amount"] == current["limits"]["cpu"]["amount"]
     assert recommendations["recommendation_engines"][profile]["config"]["requests"]["memory"]["amount"] == current["requests"]["memory"]["amount"]
