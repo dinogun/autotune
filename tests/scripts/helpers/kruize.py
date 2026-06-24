@@ -19,12 +19,6 @@ import requests
 import subprocess
 import pytest
 
-# Global variable to control which API to use
-# This is set by conftest.py which reads the USE_NEW_RECOMMENDATION_API environment variable
-# The environment variable is set by test_autotune.sh or remote_monitoring_scale_test_bulk.sh via the --api-version parameter
-# Default to False (use old/legacy APIs for backward compatibility)
-USE_NEW_API = False
-
 
 def get_kruize_url():
     return URL
@@ -147,7 +141,6 @@ def update_results(result_json_file, logging=True):
 
 # Description: This function generates recommendation for the given experiment_name , start time and end time .
 def update_recommendations(experiment_name, startTime, endTime):
-
     print("\n************************************************************")
     print("\nUpdating the recommendation \n for %s for dates Start-time: %s and End-time: %s..." % (
         experiment_name, startTime, endTime))
@@ -545,7 +538,6 @@ def list_metric_profiles(name=None, verbose=None, logging=True):
 
 # Description: This function generates recommendation for the given experiment_name
 def generate_recommendations(experiment_name):
-
     print("\n************************************************************")
     print("\nGenerating the recommendation \n for %s..." % (
         experiment_name))
