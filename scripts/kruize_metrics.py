@@ -174,10 +174,11 @@ def get_kruize_db_metrics(namespace):
         return f"Error executing queries: {e}"
 
 def run_queries(map_type,server,prometheus_url=None):
+    global use_new_api
     TOKEN = 'TOKEN'
     if prometheus_url is None:
         if cluster_type == "openshift":
-            prometheus_url = f"https://thanos-querier-openshift-monitoring.apps.{server}/api/v1/query"
+            prometheus_url = f"https://thanos-querier-openshift-monitoring.{server}/api/v1/query"
         elif cluster_type == "minikube":
             prometheus_url = f"http://{server}:9090/api/v1/query"
 
@@ -202,6 +203,7 @@ def run_queries(map_type,server,prometheus_url=None):
             response = requests.get(prometheus_url, headers=headers, params={'query': query}, verify=False)
             if response.status_code == 200:
                 results_data[key] = response.json()['data']
+                print(f"Calling {prometheus_url} for {key} using query {query} and response is = {response.json()['data']}")
                 if "result" in results_data[key] and isinstance(results_data[key]["result"], list) and len(results_data[key]["result"]) > 0:
                     if "value" in results_data[key]["result"][0]:
                         results_map[key] = results_data[key]["result"][0]["value"][1]
@@ -307,8 +309,9 @@ def main(argv):
     global namespace
     global prometheus_url
     global outputdir
+    global use_new_api
 
-    parser = argparse.ArgumentParser(description='kruize_metrics.py -c <cluster_type> -s <cluster_name> -p <prometheus_url> -t <time duration for a query in mins:Default:60m> -d <duration the script runs in hours> -q <query_type:increase/total.Default:increase> -o <single data point:Default:true> -e <results dir:Default:results')
+    parser = argparse.ArgumentParser(description='kruize_metrics.py -c <cluster_type> -s <cluster_name> -p <prometheus_url> -t <time duration for a query in mins:Default:60m> -d <duration the script runs in hours> -q <query_type:increase/total.Default:increase> -o <single data point:Default:true> -e <results dir:Default:results --api-version <API version: v1/legacy.Default:legacy>')
     parser.add_argument('-c', '--cluster_type', help='Cluster type. Supported types:openshift/minikube')
     parser.add_argument('-s', '--cluster_name', help='Name/IP to access the openshift/minikube cluster. Example:kruize-rm.p1.openshiftapps.com/localhost. Prometheus URL is generated using this name if prometheus_url is None')
     parser.add_argument('-p', '--prometheus_url', help='Prometheus URL',default=None)
@@ -318,6 +321,7 @@ def main(argv):
     parser.add_argument('-o', '--get_one_data_point', help='Single data point', default='true')
     parser.add_argument('-r', '--resultsfile', help='Results file',default='kruizemetrics.csv')
     parser.add_argument('-e', '--outputdir', help='directory to store the results', default='results')
+    parser.add_argument('--api-version', type=str, help='API version (v1/legacy)', default='legacy')
     #args = parser.parse_args()
     args, unknown = parser.parse_known_args()
 
@@ -341,6 +345,9 @@ def main(argv):
     resultsfile = args.resultsfile
     prometheus_url = args.prometheus_url
     outputdir = args.outputdir
+
+    use_new_api = args.api_version.lower() in ['v1', 'true']
+    print("rosSimulationScalabilityTest :: api_version =", args.api_version)
 
     if cluster_type == "openshift":
         namespace = "openshift-tuning"
@@ -442,7 +449,32 @@ def main(argv):
             "kruize_cpu_max": "max(sum(rate(container_cpu_usage_seconds_total{pod=~"'"kruize-[^-]*-[^-]*$"'",container=\"kruize\"}"f"[{time_duration}])))",
             "updateRecommendations_notifications_total": "sum((KruizeNotifications_total{api=\"updateRecommendations\",application=\"Kruize\"}))"
         }
-    
+
+    if use_new_api:
+        queries_map["listRecommendations_count_success"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["listRecommendations_count_failure"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"failure\"}}[{time_duration}]))"
+        queries_map["listRecommendations_sum_success"] = f"sum(increase(kruizeAPI_sum{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["listRecommendations_max_success"] = f"sum(increase(kruizeAPI_max{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+
+        queries_map["updateRecommendations_count_success"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["updateRecommendations_count_failure"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"failure\"}}[{time_duration}]))"
+        queries_map["updateRecommendations_sum_success"] = f"sum(increase(kruizeAPI_sum{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["updateRecommendations_max_success"] = f"sum(increase(kruizeAPI_max{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["updateRecommendations_notifications_total"] = "sum((KruizeNotifications_total{api=\"recommendations\",method=\"POST\",application=\"Kruize\"}))"
+
+
+    if use_new_api:
+        queries_map_total["listRecommendations_count_success"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}))"
+        queries_map_total["listRecommendations_count_failure"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"failure\"}))"
+        queries_map_total["listRecommendations_sum_success"] = "sum((kruizeAPI_sum{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}))"
+        queries_map_total["listRecommendations_max_success"] = "max(max_over_time(kruizeAPI_max{{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}}[6h]))"
+
+        queries_map_total["updateRecommendations_count_success"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"POST\",application=\"Kruize\",status=\"success\"}))"
+        queries_map_total["updateRecommendations_count_failure"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"POST\",application=\"Kruize\",status=\"failure\"}))"
+        queries_map_total["updateRecommendations_sum_success"] = "sum((kruizeAPI_sum{api=\"recommendations\",method=\"POST\",application=\"Kruize\",status=\"success\"}))"
+        queries_map_total["updateRecommendations_max_success"] = "max(max_over_time(kruizeAPI_max{{api=\"recommendations\",method=\"POST\",application=\"Kruize\",status=\"success\"}}[6h]))"
+        queries_map_total["updateRecommendations_notifications_total"] = "sum((KruizeNotifications_total{api=\"recommendations\",method=\"POST\",application=\"Kruize\"}))"
+
     # Create a thread to run the job scheduler
     job_thread = threading.Thread(target=schedule_job(queries_type,server,prometheus_url))
     job_thread.start()
