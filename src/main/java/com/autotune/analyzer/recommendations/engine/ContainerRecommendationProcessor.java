@@ -154,6 +154,10 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
         for (RecommendationConstants.RecommendationNotification recommendationNotification : notifications) {
             timestampRecommendation.addNotification(new RecommendationNotification(recommendationNotification));
         }
+        // current config should be null if requests, limits and replica are not available to avoid empty current config {}
+        if (currentRequestsMap.isEmpty() && currentLimitsMap.isEmpty() && currentConfig.getReplicas() == null)
+            return null;
+
         if (!currentRequestsMap.isEmpty()) {
             currentConfig.setRequests(currentRequestsMap);
         }
