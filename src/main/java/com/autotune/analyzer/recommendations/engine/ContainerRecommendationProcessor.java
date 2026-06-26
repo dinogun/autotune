@@ -123,8 +123,7 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
         IntervalResults lastDatapoint = filteredResultsMap.get(monitoringEndTime);
 
         RecommendationConfigItem configItem = RecommendationUtils.getCurrentValue(lastDatapoint, AnalyzerConstants.MetricName.podCount, notifications);
-        if (configItem != null && configItem.getAmount() != null) {
-            // RecommendationUtils.getCurrentValue ensured that configItem.getAmount() is never 0. It can be 'null'.
+        if (configItem != null && configItem.getAmount() != null && configItem.getAmount() > 0) {
             int replicas = (int) Math.ceil(configItem.getAmount());
             currentConfig.setReplicas(replicas);
             LOGGER.debug("Current replicas for workload '{}' is {}", containerData.getContainer_name(), replicas);
