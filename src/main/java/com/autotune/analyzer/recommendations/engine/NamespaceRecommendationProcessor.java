@@ -146,10 +146,6 @@ public final class NamespaceRecommendationProcessor extends BaseRecommendationPr
         for (RecommendationConstants.RecommendationNotification recommendationNotification : notifications) {
             timestampRecommendation.addNotification(new RecommendationNotification(recommendationNotification));
         }
-        // current config should be null if requests and limits are not available to avoid empty current config {}
-        if (currentNamespaceRequestsMap.isEmpty() && currentNamespaceLimitsMap.isEmpty())
-            return null;
-
         if (!currentNamespaceRequestsMap.isEmpty()) {
             currentNamespaceConfig.setRequests(currentNamespaceRequestsMap);
         }

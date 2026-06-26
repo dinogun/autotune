@@ -72,6 +72,7 @@ public class RecommendationUtils {
                     format = metricAggregationInfoResults.getFormat();
                 }
             }
+            // fallback for replicas in case podCount metrics is unavailable or empty
             if ((currentValue == null || currentValue == 0.0) && metricName == AnalyzerConstants.MetricName.podCount) {
                 if (currentDatapoint.getMetricResultsMap().containsKey(AnalyzerConstants.MetricName.cpuUsage)) {
                     MetricResults cpuMetricResults = currentDatapoint.getMetricResultsMap().get(AnalyzerConstants.MetricName.cpuUsage);
