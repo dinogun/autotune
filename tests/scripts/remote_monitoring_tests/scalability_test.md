@@ -67,11 +67,11 @@ cd <KRUIZE_REPO>/tests/scripts/remote_monitoring_tests/scale_test
 
 ```
 
-To test with the new Recommendations API v1.0:
+To test with the new Recommendations API v1.0 available from 0.11 release
 
 ```
 cd <KRUIZE_REPO>/tests/scripts/remote_monitoring_tests/scale_test
-./remote_monitoring_scale_test_bulk.sh -i quay.io/kruize/autotune_operator:0.7  -u 250  -d 15  -n 20 -t 6  -q 10  -s 2023-01-10T00:00:00.000Z  -r /tmp/scale_test_results --api-version=v1
+./remote_monitoring_scale_test_bulk.sh -i quay.io/kruize/autotune_operator:0.11  -u 250  -d 15  -n 20 -t 6  -q 10  -s 2023-01-10T00:00:00.000Z  -r /tmp/scale_test_results --api-version=v1
 
 ```
 

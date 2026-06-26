@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     # parse the arguments from the command line
     args = parser.parse_args()
-    use_new_api = args.api_version.lower() in ['v1', 'true']
+    use_new_api = args.api_version.lower() == 'v1'
     print("rosSimulationScalabilityTest :: api_version =", args.api_version)
     if args.port != 0:
         createExpURL = 'http://%s:%s/createExperiment' % (args.ip, args.port)

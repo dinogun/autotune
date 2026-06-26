@@ -309,7 +309,7 @@ def main(argv):
     global outputdir
     global use_new_api
 
-    parser = argparse.ArgumentParser(description='kruize_metrics.py -c <cluster_type> -s <cluster_name> -p <prometheus_url> -t <time duration for a query in mins:Default:60m> -d <duration the script runs in hours> -q <query_type:increase/total.Default:increase> -o <single data point:Default:true> -e <results dir:Default:results --api-version <API version: v1/legacy.Default:legacy>')
+    parser = argparse.ArgumentParser(description='kruize_metrics.py -c <cluster_type> -s <cluster_name> -p <prometheus_url> -t <time duration for a query in mins:Default:60m> -d <duration the script runs in hours> -q <query_type:increase/total.Default:increase> -o <single data point:Default:true> -e <results dir:Default:results> --api-version <API version: v1/legacy.Default:legacy>')
     parser.add_argument('-c', '--cluster_type', help='Cluster type. Supported types:openshift/minikube')
     parser.add_argument('-s', '--cluster_name', help='Name/IP to access the openshift/minikube cluster. Example:kruize-rm.p1.openshiftapps.com/localhost. Prometheus URL is generated using this name if prometheus_url is None')
     parser.add_argument('-p', '--prometheus_url', help='Prometheus URL',default=None)
@@ -344,7 +344,7 @@ def main(argv):
     prometheus_url = args.prometheus_url
     outputdir = args.outputdir
 
-    use_new_api = args.api_version.lower() in ['v1', 'true']
+    use_new_api = args.api_version.lower() == 'v1'
     print("rosSimulationScalabilityTest :: api_version =", args.api_version)
 
     if cluster_type == "openshift":
