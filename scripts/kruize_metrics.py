@@ -174,11 +174,10 @@ def get_kruize_db_metrics(namespace):
         return f"Error executing queries: {e}"
 
 def run_queries(map_type,server,prometheus_url=None):
-    global use_new_api
     TOKEN = 'TOKEN'
     if prometheus_url is None:
         if cluster_type == "openshift":
-            prometheus_url = f"https://thanos-querier-openshift-monitoring.{server}/api/v1/query"
+            prometheus_url = f"https://thanos-querier-openshift-monitoring.apps.{server}/api/v1/query"
         elif cluster_type == "minikube":
             prometheus_url = f"http://{server}:9090/api/v1/query"
 
@@ -203,7 +202,6 @@ def run_queries(map_type,server,prometheus_url=None):
             response = requests.get(prometheus_url, headers=headers, params={'query': query}, verify=False)
             if response.status_code == 200:
                 results_data[key] = response.json()['data']
-                print(f"Calling {prometheus_url} for {key} using query {query} and response is = {response.json()['data']}")
                 if "result" in results_data[key] and isinstance(results_data[key]["result"], list) and len(results_data[key]["result"]) > 0:
                     if "value" in results_data[key]["result"][0]:
                         results_map[key] = results_data[key]["result"][0]["value"][1]
@@ -462,8 +460,6 @@ def main(argv):
         queries_map["updateRecommendations_max_success"] = f"sum(increase(kruizeAPI_max{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
         queries_map["updateRecommendations_notifications_total"] = "sum((KruizeNotifications_total{api=\"recommendations\",method=\"POST\",application=\"Kruize\"}))"
 
-
-    if use_new_api:
         queries_map_total["listRecommendations_count_success"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}))"
         queries_map_total["listRecommendations_count_failure"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"failure\"}))"
         queries_map_total["listRecommendations_sum_success"] = "sum((kruizeAPI_sum{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}))"

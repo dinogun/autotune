@@ -100,7 +100,7 @@ function container_ns_scale_test() {
 	declare -a pid_array=()
 
 	# Each loops kicks off the specified no. of experiments and posts results for the specified no. of days
-	prometheus_server=$(echo ${IP} | cut -d "." -f 2- )
+	prometheus_server=$(echo ${IP} | cut -d "." -f 3- )
 	echo "Prometheus server = $prometheus_server"
 	for ((loop=1; loop<=num_clients; loop++));
 	do
@@ -157,7 +157,7 @@ function scale_test() {
 
 	declare -a pid_array=()
 	# Each loops kicks off the specified no. of experiments and posts results for the specified no. of days
-	prometheus_server=$(echo ${IP} | cut -d "." -f 2- )
+	prometheus_server=$(echo ${IP} | cut -d "." -f 3- )
 	echo "Prometheus server = $prometheus_server"
 	for ((loop=1; loop<=num_clients; loop++));
 	do
@@ -253,7 +253,7 @@ if [ -z "${IP}" ]; then
 	usage
 fi
 
-echo "run_bulk_scalability_test :: api_version = "+${api_version}
+echo "run_bulk_scalability_test.sh :: api_version = ${api_version}"
 # Set the API version to default if not passed on parameter
 if [ -z "${api_version}" ]; then
   api_version="legacy"

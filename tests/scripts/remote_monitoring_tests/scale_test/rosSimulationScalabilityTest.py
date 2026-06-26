@@ -59,9 +59,9 @@ def updateRecommendation(experiment_name, endDate):
         print('updateRecommendation Timeout occurred while connecting to', e)
 
 def postResultsInBulk(expName, bulkData):
-    print(f"calling POST API {updateExpURL} with {len(bulkData)} datapoints")
     json_payload = json.dumps(bulkData)
     try:
+        print(f"calling POST API {updateExpURL} with {len(bulkData)} datapoints")
         # Send the request with the payload
         response = requests.post(updateExpURL, data=json_payload, headers=headers, timeout=timeout)
         # Check the response
@@ -76,7 +76,7 @@ def postResultsInBulk(expName, bulkData):
         print('An error occurred while connecting to', e)
 
 if __name__ == "__main__":
-    debug = True
+    debug = False
     # create an ArgumentParser object
     parser = argparse.ArgumentParser()
 
@@ -143,8 +143,8 @@ if __name__ == "__main__":
 
     # Create a performance profile
     profile_json_payload = json.dumps(profile_data)
-    response = requests.post(createProfileURL, data=profile_json_payload, headers=headers)
     print(f"calling POST API {createProfileURL}")
+    response = requests.post(createProfileURL, data=profile_json_payload, headers=headers)
     if response.status_code == 201:
         if debug: print('Request successful!')
         if expcount > 10 : time.sleep(5)
@@ -166,8 +166,8 @@ if __name__ == "__main__":
             # Create experiment
             #requests.post(createProfileURL, data=profile_json_payload, headers=headers)
             createExp_start_time = time.time()
-            response = requests.post(createExpURL, data=create_json_payload, headers=headers, timeout=timeout)
             print(f"calling POST API {createExpURL}")
+            response = requests.post(createExpURL, data=create_json_payload, headers=headers, timeout=timeout)
             createExp_elapsed_time = time.time() -createExp_start_time
             j = 0
             if args.startdate:

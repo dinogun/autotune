@@ -179,7 +179,7 @@ do
 	esac
 done
 
-echo "remote_monitoring_scale_test_bulk :: api_version = "+${api_version}
+echo "remote_monitoring_scale_test_bulk.sh :: api_version = ${api_version}"
 # Set the API version to default if not passed on parameter
 if [ -z "${api_version}" ]; then
   api_version="legacy"
@@ -232,7 +232,6 @@ fi
 
 if [ -z "${SERVER_IP_ADDR}" ]; then
 	oc expose svc/kruize -n ${NAMESPACE}
-	oc patch route kruize -p '{"spec":{"tls":{"termination":"edge","insecureEdgeTerminationPolicy":"Allow"}}}'
 
 	SERVER_IP_ADDR=($(oc status --namespace=${NAMESPACE} | grep "kruize" | grep port | cut -d " " -f1 | cut -d "/" -f3))
 	port=0
