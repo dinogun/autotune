@@ -452,12 +452,12 @@ def main(argv):
         queries_map["listRecommendations_count_success"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
         queries_map["listRecommendations_count_failure"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"failure\"}}[{time_duration}]))"
         queries_map["listRecommendations_sum_success"] = f"sum(increase(kruizeAPI_sum{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
-        queries_map["listRecommendations_max_success"] = f"sum(increase(kruizeAPI_max{{api=\"recommendations\",method=\"GET\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["listRecommendations_max_success"] = f"max(max_over_time(kruizeAPI_max{{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
 
         queries_map["updateRecommendations_count_success"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
         queries_map["updateRecommendations_count_failure"] = f"sum(increase(kruizeAPI_count{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"failure\"}}[{time_duration}]))"
         queries_map["updateRecommendations_sum_success"] = f"sum(increase(kruizeAPI_sum{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
-        queries_map["updateRecommendations_max_success"] = f"sum(increase(kruizeAPI_max{{api=\"recommendations\",method=\"POST\", application=\"Kruize\",status=\"success\"}}[{time_duration}]))"
+        queries_map["updateRecommendations_max_success"] = f"max(max_over_time(kruizeAPI_max{{api=\"recommendations\",method=\"POST\",application=\"Kruize\",status=\"success\"}}[{time_duration}]))",
         queries_map["updateRecommendations_notifications_total"] = "sum((KruizeNotifications_total{api=\"recommendations\",method=\"POST\",application=\"Kruize\"}))"
 
         queries_map_total["listRecommendations_count_success"] = "sum((kruizeAPI_count{api=\"recommendations\",method=\"GET\",application=\"Kruize\",status=\"success\"}))"
