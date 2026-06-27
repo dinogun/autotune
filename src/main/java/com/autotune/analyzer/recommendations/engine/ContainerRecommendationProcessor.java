@@ -401,7 +401,7 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
             if (null == metricAggregationInfoResults) {
                 // Unable to calculate pod count aggregation values
                 if (notifications != null)
-                    notifications.add(new RecommendationNotification(RecommendationConstants.RecommendationNotification.NOTICE_POD_COUNT_DERIVED_FROM_CPU));
+                    notifications.add(new RecommendationNotification(RecommendationConstants.RecommendationNotification.ERROR_NOT_ENOUGH_DATA_FOR_POD_COUNT));
             }
         }
 
