@@ -383,6 +383,10 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
             // 2. Calculate from 'cpuUsage' datapoints using formulae avg of 'sum/avg', min of 'sum/avg', max of 'sum/avg'
             if (null == metricAggregationInfoResults) {
                 metricAggregationInfoResults = getPodCountAggrInfoFromMetric(filteredResultsMap, AnalyzerConstants.MetricName.cpuUsage);
+                if (metricAggregationInfoResults != null) {
+                    if (notifications != null)
+                        notifications.add(new RecommendationNotification(RecommendationConstants.RecommendationNotification.NOTICE_POD_COUNT_DERIVED_FROM_CPU));
+                }
             }
 
             // 3. Calculate from 'memoryUsage' datapoints using formulae avg of 'sum/avg', min of 'sum/avg', max of 'sum/avg'
@@ -391,11 +395,11 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
                 if (null != metricAggregationInfoResults) {
                     if (notifications != null)
                         notifications.add(new RecommendationNotification(RecommendationConstants.RecommendationNotification.NOTICE_POD_COUNT_DERIVED_FROM_MEMORY));
-                } else {
-                    if (notifications != null)
-                        notifications.add(new RecommendationNotification(RecommendationConstants.RecommendationNotification.ERROR_NOT_ENOUGH_DATA_FOR_POD_COUNT));
                 }
-            } else {
+            }
+
+            if (null == metricAggregationInfoResults) {
+                // Unable to calculate pod count aggregation values
                 if (notifications != null)
                     notifications.add(new RecommendationNotification(RecommendationConstants.RecommendationNotification.NOTICE_POD_COUNT_DERIVED_FROM_CPU));
             }
@@ -434,11 +438,11 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
                         .orElse(0.0);
                 if (avg > 0.0) {
                     min = metricDatapoints.stream()
-                            .mapToDouble(MetricAggregationInfoResults::getSum)
+                            .mapToDouble(MetricAggregationInfoResults::getMin)
                             .min()
                             .orElse(0.0);
                     max = metricDatapoints.stream()
-                            .mapToDouble(MetricAggregationInfoResults::getSum)
+                            .mapToDouble(MetricAggregationInfoResults::getMax)
                             .max()
                             .orElse(0.0);
                 }
