@@ -125,7 +125,7 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
         RecommendationConfigItem configItem = RecommendationUtils.getCurrentValue(lastDatapoint, AnalyzerConstants.MetricName.podCount, notifications);
         if (configItem != null && configItem.getAmount() != null) {
             // RecommendationUtils.getCurrentValue ensured that configItem.getAmount() is never 0. It can be 'null'.
-            int replicas = (int) Math.ceil(configItem.getAmount());
+            int replicas = (int) Math.round(configItem.getAmount());
             currentConfig.setReplicas(replicas);
             LOGGER.debug("Current replicas for workload '{}' is {}", containerData.getContainer_name(), replicas);
         }
@@ -429,24 +429,24 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
                 max = calcPodCounts.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
             } else if (metricName == AnalyzerConstants.MetricName.podCount) { // Compute min, max, avg directly from podCount datapoints.
                 avg = metricDatapoints.stream()
-                        .mapToDouble(MetricAggregationInfoResults::getAvg)
+                        .mapToDouble(MetricAggregationInfoResults::getSum)
                         .average()
                         .orElse(0.0);
                 if (avg > 0.0) {
                     min = metricDatapoints.stream()
-                            .mapToDouble(MetricAggregationInfoResults::getMin)
+                            .mapToDouble(MetricAggregationInfoResults::getSum)
                             .min()
                             .orElse(0.0);
                     max = metricDatapoints.stream()
-                            .mapToDouble(MetricAggregationInfoResults::getMax)
+                            .mapToDouble(MetricAggregationInfoResults::getSum)
                             .max()
                             .orElse(0.0);
                 }
             }
             metricAggregationInfoResults = new MetricAggregationInfoResults();
-            metricAggregationInfoResults.setAvg(Math.ceil(avg));
-            metricAggregationInfoResults.setMin(Math.ceil(min));
-            metricAggregationInfoResults.setMax(Math.ceil(max));
+            metricAggregationInfoResults.setAvg((double) Math.round(avg));
+            metricAggregationInfoResults.setMin((double) Math.round(min));
+            metricAggregationInfoResults.setMax((double) Math.round(max));
         }
 
         LOGGER.debug("Aggregation Info for metric {}: avg = {} min={}, max={}", metricName, avg, min, max);

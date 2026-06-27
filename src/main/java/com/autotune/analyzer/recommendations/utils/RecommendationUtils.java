@@ -68,7 +68,10 @@ public class RecommendationUtils {
                 MetricResults metricResults = currentDatapoint.getMetricResultsMap().get(metricName);
                 MetricAggregationInfoResults metricAggregationInfoResults = metricResults.getAggregationInfoResult();
                 if (null != metricAggregationInfoResults) {
-                    currentValue = metricAggregationInfoResults.getAvg();
+                    currentValue = metricAggregationInfoResults.getSum();
+                    if (currentValue == 0.0) {
+                        currentValue = metricAggregationInfoResults.getAvg();
+                    }
                     format = metricAggregationInfoResults.getFormat();
                 }
             }
