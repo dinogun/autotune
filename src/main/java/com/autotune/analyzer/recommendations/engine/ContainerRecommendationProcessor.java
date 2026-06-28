@@ -433,7 +433,7 @@ public final class ContainerRecommendationProcessor extends BaseRecommendationPr
                 max = calcPodCounts.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
             } else if (metricName == AnalyzerConstants.MetricName.podCount) { // Compute min, max, avg directly from podCount datapoints.
                 avg = metricDatapoints.stream()
-                        .mapToDouble(MetricAggregationInfoResults::getSum)
+                        .mapToDouble(MetricAggregationInfoResults::getAvg)
                         .average()
                         .orElse(0.0);
                 if (avg > 0.0) {
